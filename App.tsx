@@ -1,102 +1,83 @@
-import { useStore } from './store/useStore';
-import Sidebar from './components/layout/Sidebar';
-import Header from './components/layout/Header';
-import Dashboard from './modules/Dashboard';
-import MasterData from './modules/MasterData';
-import Inventory from './modules/Inventory';
-import Purchase from './modules/Purchase';
-import Production from './modules/Production';
-import Sales from './modules/Sales';
-import B2BInvoice from './modules/B2BInvoice';
-import Track from './modules/Track';
-import CODRecovery from './modules/CODRecovery';
-import Accounts from './modules/Accounts';
-import Reports from './modules/Reports';
-import UserManagement from './modules/UserManagement';
-import Settings from './modules/Settings';
-import { useEffect, useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AppProvider, useApp } from './context/AppContext';
+import Layout from './components/Layout';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Masters from './pages/Masters';
+import Purchase from './pages/Purchase';
+import Inventory from './pages/Inventory';
+import ProductionJobWork from './pages/production/JobWork';
+import ProductionMaterialIn from './pages/production/MaterialIn';
+import ProductionReports from './pages/production/Reports';
+import SalesB2B from './pages/SalesB2B';
+import SalesB2C from './pages/SalesB2C';
+import OrderTracking from './pages/OrderTracking';
+import CODRecovery from './pages/CODRecovery';
+import CourierSettlement from './pages/CourierSettlement';
+import BulkUpload from './pages/BulkUpload';
+import UploadHistory from './pages/UploadHistory';
+import Accounts from './pages/Accounts';
+import GST from './pages/GST';
+import Reports from './pages/Reports';
+import AIManager from './pages/AIManager';
+import Settings from './pages/Settings';
+import D2CEcommerce from './pages/D2CEcommerce';
 
-function ModuleContent({ module }: { module: string }) {
-  switch (module) {
-    case 'dashboard': return <Dashboard />;
-    case 'master': return <MasterData />;
-    case 'inventory': return <Inventory />;
-    case 'purchase': return <Purchase />;
-    case 'production': return <Production />;
-    case 'sales': return <Sales />;
-    case 'b2b': return <B2BInvoice />;
-    case 'track': return <Track />;
-    case 'cod': return <CODRecovery />;
-    case 'accounts': return <Accounts />;
-    case 'reports': return <Reports />;
-    case 'users': return <UserManagement />;
-    case 'settings': return <Settings />;
-    default: return <Dashboard />;
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useApp();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
+
+  return <Layout>{children}</Layout>;
 }
 
-export default function App() {
-  const { activeModule } = useStore();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Close mobile menu when module changes
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [activeModule]);
-
-  // Close mobile menu on resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) setMobileMenuOpen(false);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+function AppRoutes() {
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* Mobile overlay */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Sidebar - desktop */}
-      <div className="hidden lg:flex flex-shrink-0">
-        <Sidebar />
-      </div>
-
-      {/* Sidebar - mobile */}
-      <div className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 lg:hidden ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Sidebar />
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Mobile Header Bar */}
-        <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-gray-900 text-white">
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg hover:bg-gray-800">
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-xs font-bold">FF</span>
-            </div>
-            <span className="text-sm font-bold">FabricFlow ERP</span>
-          </div>
-          <div className="w-9" />
-        </div>
-
-        <Header />
-
-        {/* Scrollable Module Content */}
-        <main className="flex-1 overflow-y-auto">
-          <ModuleContent module={activeModule} />
-        </main>
-      </div>
-    </div>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/masters" element={<ProtectedRoute><Masters /></ProtectedRoute>} />
+      <Route path="/purchase" element={<ProtectedRoute><Purchase /></ProtectedRoute>} />
+      <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
+      <Route path="/production/job-work" element={<ProtectedRoute><ProductionJobWork /></ProtectedRoute>} />
+      <Route path="/production/material-in" element={<ProtectedRoute><ProductionMaterialIn /></ProtectedRoute>} />
+      <Route path="/production/reports" element={<ProtectedRoute><ProductionReports /></ProtectedRoute>} />
+      <Route path="/sales/b2b" element={<ProtectedRoute><SalesB2B /></ProtectedRoute>} />
+      <Route path="/sales/b2c" element={<ProtectedRoute><SalesB2C /></ProtectedRoute>} />
+      <Route path="/orders" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
+      <Route path="/cod" element={<ProtectedRoute><CODRecovery /></ProtectedRoute>} />
+      <Route path="/courier-settlement" element={<ProtectedRoute><CourierSettlement /></ProtectedRoute>} />
+      <Route path="/bulk-upload" element={<ProtectedRoute><BulkUpload /></ProtectedRoute>} />
+      <Route path="/upload-history" element={<ProtectedRoute><UploadHistory /></ProtectedRoute>} />
+      <Route path="/accounts" element={<ProtectedRoute><Accounts /></ProtectedRoute>} />
+      <Route path="/gst" element={<ProtectedRoute><GST /></ProtectedRoute>} />
+      <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+      <Route path="/ai-manager" element={<ProtectedRoute><AIManager /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      
+      {/* D2C E-Commerce Routes */}
+      <Route path="/d2c/orders" element={<ProtectedRoute><D2CEcommerce defaultView="list" /></ProtectedRoute>} />
+      <Route path="/d2c/create" element={<ProtectedRoute><D2CEcommerce defaultView="create" /></ProtectedRoute>} />
+      <Route path="/d2c/bulk" element={<ProtectedRoute><D2CEcommerce defaultView="bulk" /></ProtectedRoute>} />
+      <Route path="/d2c/shipment" element={<ProtectedRoute><D2CEcommerce defaultView="shipment" /></ProtectedRoute>} />
+      <Route path="/d2c/tracking" element={<ProtectedRoute><D2CEcommerce defaultView="tracking" /></ProtectedRoute>} />
+      <Route path="/d2c/reports" element={<ProtectedRoute><D2CEcommerce defaultView="reports" /></ProtectedRoute>} />
+      
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
+
+function App() {
+  return (
+    <AppProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </AppProvider>
+  );
+}
+
+export default App;
